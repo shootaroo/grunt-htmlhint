@@ -29,6 +29,7 @@ module.exports = function(grunt) {
     delete options.force;
 
     var hintCount = 0;
+    var results = {};
     arrFilesSrc.forEach(function( filepath ) {
       var file = grunt.file.read( filepath ),
         msg = "Linting " + filepath + "...",
@@ -36,6 +37,7 @@ module.exports = function(grunt) {
       if (file.length) {
         messages = HTMLHint.verify(file, options);
         verbose.write( msg );
+        results[filepath] = messages;
         if (messages.length > 0) {
           verbose.or.write( msg );
           grunt.log.error();
@@ -61,6 +63,22 @@ module.exports = function(grunt) {
         grunt.log.writeln( "Skipping empty file " + filepath);
       }
     });
+
+    var _ = grunt.util._;
+    if (options.formatters && _.isArray(options.formatters)) {
+      options.formatters.forEach(function(def) {
+        if (!def.id || !def.dest) {
+          return;
+        }
+        var formatter = require('../node_modules/htmlhint/lib/formatters/' + def.id);
+        var output = formatter.start ? formatter.start() : '';
+        _.each(results, function (messages, filepath) {
+          output += formatter.format(messages, filepath);
+        });
+        output += formatter.end ? formatter.end() : '';
+        grunt.file.write(def.dest, output);
+      });
+    }
 
     if ( hintCount > 0 ) {
       return force;
