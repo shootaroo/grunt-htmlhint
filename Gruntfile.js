@@ -30,6 +30,17 @@ module.exports = function(grunt) {
           'htmlhintrc': 'test/.htmlhintrc'
         },
         src: 'test/fixtures/*.html'
+      },
+      formatter: {
+        options: {
+          'tag-pair': true,
+          'htmlhintrc': 'test/.htmlhintrc',
+          "formatters": [{
+            id: 'checkstyle',
+            dest: 'tmp/reports/htmlhint.xml'
+          }]
+        },
+        src: 'test/fixtures/*.html'
       }
     }
 
